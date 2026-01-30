@@ -1,36 +1,34 @@
 package com.example.kernel.data.model
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import com.google.gson.annotations.SerializedName
 
 /**
  * Data model representing a competitive programming contest.
  * This model is used to parse data from the Kontests API.
  */
-@JsonClass(generateAdapter = true)
 data class Contest(
-    @Json(name = "name")
+    @SerializedName("name")
     val name: String,
 
-    @Json(name = "url")
+    @SerializedName("url")
     val url: String,
 
-    @Json(name = "start_time")
+    @SerializedName("start_time")
     val startTime: String, // ISO 8601 format
 
-    @Json(name = "end_time")
+    @SerializedName("end_time")
     val endTime: String, // ISO 8601 format
 
-    @Json(name = "duration")
+    @SerializedName("duration")
     val duration: String, // Duration in seconds
 
-    @Json(name = "site")
+    @SerializedName("site")
     val site: String, // Platform name (e.g., "CodeForces", "CodeChef")
 
-    @Json(name = "in_24_hours")
+    @SerializedName("in_24_hours")
     val in24Hours: String, // "Yes" or "No"
 
-    @Json(name = "status")
+    @SerializedName("status")
     val status: String // "CODING", "BEFORE"
 ) {
     /**
@@ -50,17 +48,22 @@ data class Contest(
     }
 
     /**
-     * Get platform icon resource ID based on platform name
+     * Get platform color as Int for XML views
      */
-    fun getPlatformColor(): Long {
+    fun getPlatformColorInt(): Int {
         return when (site.lowercase()) {
-            "codeforces" -> 0xFF1976D2
-            "codechef" -> 0xFF8B4513
-            "leetcode" -> 0xFFFFA116
-            "atcoder" -> 0xFF000000
-            "hackerrank" -> 0xFF00EA64
-            "hackerearth" -> 0xFF323754
-            else -> 0xFF6200EE
+            "codeforces" -> 0xFF1976D2.toInt()
+            "codechef" -> 0xFF8B4513.toInt()
+            "leetcode" -> 0xFFFFA116.toInt()
+            "atcoder" -> 0xFF222222.toInt()
+            "hackerrank" -> 0xFF00EA64.toInt()
+            "hackerearth" -> 0xFF323754.toInt()
+            else -> 0xFF6200EE.toInt()
         }
     }
+
+    /**
+     * Check if contest is live
+     */
+    fun isLive(): Boolean = status == "CODING"
 }
