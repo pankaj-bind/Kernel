@@ -1,52 +1,41 @@
-<<<<<<< HEAD
-# Gradle files
+# ===== Gradle =====
 .gradle/
 build/
 
-# Local configuration file (sdk path, etc)
+# ===== Local config =====
 local.properties
 
-# Log/OS Files
+# ===== Logs / OS =====
 *.log
+.DS_Store
 
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.aab
-*.apk
-output-metadata.json
-
-# IntelliJ
+# ===== Android Studio / IntelliJ =====
 *.iml
 .idea/
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
 misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# ===== Android build outputs =====
+*.apk
+*.aab
+output-metadata.json
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ===== Keystore (DO NOT COMMIT) =====
 *.jks
 *.keystore
 
-# Google Services (e.g. APIs or Firebase)
+# ===== Google Services =====
 google-services.json
 
-# Android Profiling
+# ===== Android profiling =====
 *.hprof
-=======
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
->>>>>>> f652a26 (Initial commit)
