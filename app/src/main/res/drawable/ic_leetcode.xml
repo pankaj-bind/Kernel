@@ -4,20 +4,17 @@
     android:viewportWidth="48"
     android:viewportHeight="48">
 
-    <!-- Left angle bracket < -->
+    <!-- LeetCode orange hexagon background -->
     <path
         android:fillColor="#FFA116"
-        android:strokeWidth="0"
-        android:pathData="M18,24L8,14L8,10L22,24L8,38L8,34Z" />
+        android:pathData="M24,4L36,12L36,28L24,36L12,28L12,12Z" />
 
-    <!-- Right angle bracket > -->
+    <!-- White "LC" text representation -->
     <path
-        android:fillColor="#FFA116"
-        android:strokeWidth="0"
-        android:pathData="M30,24L40,14L40,10L26,24L40,38L40,34Z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M18,16h2v12h4v2h-6z" />
 
-    <!-- Horizontal line in middle (underscore style) -->
     <path
-        android:fillColor="#B3B3B3"
-        android:pathData="M14,28h20v4h-20z" />
+        android:fillColor="#FFFFFF"
+        android:pathData="M26,16h6v2h-4v4h4v2h-4v4h4v2h-6z" />
 </vector>

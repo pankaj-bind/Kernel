@@ -44,10 +44,6 @@ class AlarmRepository @Inject constructor(
     }
 
     private fun scheduleAlarm(alarm: AlarmEntity) {
-        if (alarm.daysOfWeek.isEmpty()) {
-            alarmScheduler.schedule(alarm)
-        } else {
-            alarmScheduler.scheduleRepeating(alarm)
-        }
+        alarmScheduler.schedule(alarm)
     }
 }

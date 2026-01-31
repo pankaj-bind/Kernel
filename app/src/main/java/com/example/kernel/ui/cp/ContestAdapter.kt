@@ -1,7 +1,6 @@
 package com.example.kernel.ui.cp
 
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -12,26 +11,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.kernel.R
 import com.example.kernel.data.model.Contest
 import com.example.kernel.databinding.ItemContestCardBinding
-import java.time.Duration
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
 /**
- * Status information for contest chip styling
+ * Data class to hold status styling information
  */
 private data class StatusInfo(
     val text: String,
-    val textColorRes: Int
-)
-
-/**
- * Platform visual configuration
- */
-private data class PlatformConfig(
-    val logoRes: Int,
-    val tintColorRes: Int
+    val textColor: Int,
+    val background: Int
 )
 
 class ContestAdapter : ListAdapter<Contest, ContestAdapter.ContestViewHolder>(ContestDiffCallback()) {
@@ -54,83 +44,50 @@ class ContestAdapter : ListAdapter<Contest, ContestAdapter.ContestViewHolder>(Co
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(contest: Contest) {
-            val context = binding.root.context
-
             with(binding) {
-                // Get platform configuration
-                val platformConfig = getPlatformConfig(contest.platform)
+                // Platform logo
+                imagePlatform.setImageResource(getPlatformLogo(contest.platform))
 
-                // Set platform logo
-                imagePlatform.setImageResource(platformConfig.logoRes)
-
-                // Set background tint color for the logo container
-                val tintColor = ContextCompat.getColor(context, platformConfig.tintColorRes)
-                logoBg.backgroundTintList = ColorStateList.valueOf(tintColor)
-
-                // Platform name (uppercase)
+                // Platform name
                 textPlatform.text = contest.platform.displayName.uppercase(Locale.ROOT)
 
                 // Contest name
                 textContestName.text = contest.name
 
-                // Formatted start time: "Sat, 31 Jan • 08:00 PM"
+                // Formatted start time with day name
                 textStartTime.text = formatStartTime(contest)
 
-                // Duration
+                // Duration (without "Duration:" prefix for cleaner look)
                 textDuration.text = contest.getFormattedDuration()
 
-                // Status chip with dynamic styling
-                val statusInfo = getStatusInfo(contest)
-                textStatus.text = statusInfo.text
-                val statusColor = ContextCompat.getColor(context, statusInfo.textColorRes)
-                textStatus.setTextColor(statusColor)
+                // Status chip with dynamic background and text
+                setupStatusChip(contest)
 
                 // Card click - open contest URL
                 cardContest.setOnClickListener {
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(contest.url))
-                    context.startActivity(intent)
+                    it.context.startActivity(intent)
                 }
             }
         }
 
         /**
-         * Get platform-specific logo and background configuration
+         * Get platform logo drawable resource
          */
-        private fun getPlatformConfig(platform: Contest.Platform): PlatformConfig {
+        private fun getPlatformLogo(platform: Contest.Platform): Int {
             return when (platform) {
-                Contest.Platform.CODEFORCES -> PlatformConfig(
-                    R.drawable.ic_codeforces,
-                    R.color.codeforces_blue
-                )
-                Contest.Platform.LEETCODE -> PlatformConfig(
-                    R.drawable.ic_leetcode,
-                    R.color.leetcode_orange
-                )
-                Contest.Platform.CODECHEF -> PlatformConfig(
-                    R.drawable.ic_codechef,
-                    R.color.codechef_brown
-                )
-                Contest.Platform.ATCODER -> PlatformConfig(
-                    R.drawable.ic_atcoder,
-                    R.color.atcoder_black
-                )
-                Contest.Platform.HACKERRANK -> PlatformConfig(
-                    R.drawable.ic_hackerrank,
-                    R.color.hackerrank_green
-                )
-                Contest.Platform.HACKEREARTH -> PlatformConfig(
-                    R.drawable.ic_hackerearth,
-                    R.color.hackerearth_dark
-                )
-                else -> PlatformConfig(
-                    R.drawable.ic_emoji_events,
-                    R.color.purple_500
-                )
+                Contest.Platform.CODEFORCES -> R.drawable.ic_codeforces
+                Contest.Platform.CODECHEF -> R.drawable.ic_codechef
+                Contest.Platform.LEETCODE -> R.drawable.ic_leetcode
+                Contest.Platform.ATCODER -> R.drawable.ic_atcoder
+                Contest.Platform.HACKERRANK -> R.drawable.ic_hackerrank
+                Contest.Platform.HACKEREARTH -> R.drawable.ic_hackerearth
+                else -> R.drawable.ic_emoji_events
             }
         }
 
         /**
-         * Format start time: "Sat, 31 Jan • 08:00 PM"
+         * Format start time in premium style: "Sat, 31 Jan • 08:00 PM"
          */
         private fun formatStartTime(contest: Contest): String {
             val dayOfWeek = contest.startTime.dayOfWeek
@@ -143,51 +100,42 @@ class ContestAdapter : ListAdapter<Contest, ContestAdapter.ContestViewHolder>(Co
         }
 
         /**
-         * Get status info with text, colors based on time until start
+         * Setup status chip with dynamic color and text
+         */
+        private fun setupStatusChip(contest: Contest) {
+            val context = binding.root.context
+            val statusInfo = getStatusInfo(contest)
+
+            with(binding.textStatus) {
+                text = statusInfo.text
+                setTextColor(ContextCompat.getColor(context, statusInfo.textColor))
+                setBackgroundResource(statusInfo.background)
+            }
+        }
+
+        /**
+         * Get status information (text, color, background)
          */
         private fun getStatusInfo(contest: Contest): StatusInfo {
-            val now = ZonedDateTime.now()
-
-            // Check if LIVE
-            if (contest.isLive()) {
-                return StatusInfo(
+            return if (contest.isLive()) {
+                StatusInfo(
                     text = "🔴 LIVE",
-                    textColorRes = R.color.status_live
+                    textColor = R.color.status_live,
+                    background = R.drawable.bg_status_chip_live
                 )
-            }
+            } else {
+                val timeUntil = contest.getTimeUntilStart()
 
-            // Calculate time until start
-            val duration = Duration.between(now, contest.startTime)
-            val hoursUntil = duration.toHours()
-            val minutesUntil = duration.toMinutes()
+                // Determine if it's starting soon (within 6 hours)
+                val isSoon = timeUntil.contains("h") && !timeUntil.contains("d")
+                    && timeUntil.replace(Regex("[^0-9]"), "").toIntOrNull()?.let { it <= 6 } == true
 
-            return when {
-                // Starting very soon (< 1 hour) - RED
-                minutesUntil in 0..59 -> StatusInfo(
-                    text = if (minutesUntil <= 0) "Starting" else "In ${minutesUntil}m",
-                    textColorRes = R.color.status_live
+                StatusInfo(
+                    text = timeUntil,
+                    textColor = if (isSoon) R.color.orange_500 else R.color.status_upcoming,
+                    background = if (isSoon) R.drawable.bg_status_chip_soon
+                                else R.drawable.bg_status_chip_upcoming
                 )
-
-                // Starting soon (1-6 hours) - ORANGE
-                hoursUntil in 1..6 -> StatusInfo(
-                    text = "In ${hoursUntil}h",
-                    textColorRes = R.color.orange_500
-                )
-
-                // Starting today (6-24 hours) - GREEN
-                hoursUntil in 7..24 -> StatusInfo(
-                    text = "In ${hoursUntil}h",
-                    textColorRes = R.color.status_upcoming
-                )
-
-                // Days away - GREEN
-                else -> {
-                    val daysUntil = duration.toDays()
-                    StatusInfo(
-                        text = if (daysUntil == 1L) "In 1d" else "In ${daysUntil}d",
-                        textColorRes = R.color.status_upcoming
-                    )
-                }
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kernel.data.local.AlarmEntity
+import com.example.kernel.data.local.Difficulty
 import com.example.kernel.data.local.MissionType
 import com.example.kernel.databinding.ItemAlarmBinding
 import java.text.SimpleDateFormat
@@ -44,8 +45,30 @@ class AlarmAdapter(
             binding.textTime.text = timeFormat.format(date)
             binding.textAmPm.text = amPmFormat.format(date).uppercase()
             binding.textLabel.text = alarm.label
-            binding.textMission.text = getMissionText(alarm.missionType)
-            binding.textDays.text = getDaysText(alarm.daysOfWeek)
+
+            binding.chipMission.text = getMissionText(alarm.missionType)
+            binding.chipDifficulty.text = getDifficultyText(alarm.difficulty)
+
+            // Show time until alarm for debugging
+            if (alarm.isEnabled) {
+                val now = System.currentTimeMillis()
+                val timeUntil = alarm.timeInMillis - now
+                if (timeUntil > 0) {
+                    val hours = timeUntil / (1000 * 60 * 60)
+                    val minutes = (timeUntil % (1000 * 60 * 60)) / (1000 * 60)
+                    binding.textDays.visibility = android.view.View.VISIBLE
+                    binding.textDays.text = if (hours > 0) {
+                        "Rings in ${hours}h ${minutes}m"
+                    } else {
+                        "Rings in ${minutes}m"
+                    }
+                } else {
+                    binding.textDays.visibility = android.view.View.VISIBLE
+                    binding.textDays.text = "Alarm time passed"
+                }
+            } else {
+                binding.textDays.visibility = android.view.View.GONE
+            }
 
             binding.switchAlarm.setOnCheckedChangeListener(null)
             binding.switchAlarm.isChecked = alarm.isEnabled
@@ -62,28 +85,23 @@ class AlarmAdapter(
                 true
             }
 
-            binding.root.alpha = if (alarm.isEnabled) 1.0f else 0.5f
+            binding.root.alpha = if (alarm.isEnabled) 1.0f else 0.6f
+            binding.cardAlarm.strokeWidth = if (alarm.isEnabled) 2 else 0
         }
 
         private fun getMissionText(missionType: MissionType): String {
             return when (missionType) {
                 MissionType.NONE -> "No Mission"
-                MissionType.MATH -> "🧮 Math Problem"
-                MissionType.SHAKE -> "📱 Shake Phone"
+                MissionType.MATH -> "🧮 Math"
+                MissionType.SHAKE -> "📱 Shake"
             }
         }
 
-        private fun getDaysText(days: List<Int>): String {
-            if (days.isEmpty()) return "Once"
-
-            val dayNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
-            val selectedDays = days.map { dayNames[it - 1] }
-
-            return when {
-                days.size == 7 -> "Every day"
-                days == listOf(2, 3, 4, 5, 6) -> "Weekdays"
-                days == listOf(1, 7) -> "Weekends"
-                else -> selectedDays.joinToString(", ")
+        private fun getDifficultyText(difficulty: Difficulty): String {
+            return when (difficulty) {
+                Difficulty.EASY -> "Easy"
+                Difficulty.MEDIUM -> "Medium"
+                Difficulty.HARD -> "Hard"
             }
         }
     }

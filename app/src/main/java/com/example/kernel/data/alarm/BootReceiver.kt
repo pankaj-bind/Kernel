@@ -29,11 +29,7 @@ class BootReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             val enabledAlarms = alarmDao.getEnabledAlarms()
             enabledAlarms.forEach { alarm ->
-                if (alarm.daysOfWeek.isEmpty()) {
-                    alarmScheduler.schedule(alarm)
-                } else {
-                    alarmScheduler.scheduleRepeating(alarm)
-                }
+                alarmScheduler.schedule(alarm)
             }
         }
     }

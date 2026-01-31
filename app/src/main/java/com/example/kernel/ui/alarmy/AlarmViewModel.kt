@@ -3,6 +3,7 @@ package com.example.kernel.ui.alarmy
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.kernel.data.local.AlarmEntity
+import com.example.kernel.data.local.Difficulty
 import com.example.kernel.data.local.MissionType
 import com.example.kernel.data.repository.AlarmRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,25 +38,23 @@ class AlarmViewModel @Inject constructor(
         }
     }
 
-    fun addAlarm(hour: Int, minute: Int, label: String = "Alarm") {
+    fun addAlarm(
+        timeInMillis: Long,
+        label: String,
+        missionType: MissionType = MissionType.NONE,
+        difficulty: Difficulty = Difficulty.MEDIUM,
+        soundResId: Int = 0,
+        isVibrationOn: Boolean = true
+    ) {
         viewModelScope.launch {
-            val calendar = Calendar.getInstance().apply {
-                set(Calendar.HOUR_OF_DAY, hour)
-                set(Calendar.MINUTE, minute)
-                set(Calendar.SECOND, 0)
-                set(Calendar.MILLISECOND, 0)
-            }
-
-            if (calendar.timeInMillis <= System.currentTimeMillis()) {
-                calendar.add(Calendar.DAY_OF_YEAR, 1)
-            }
-
             val alarm = AlarmEntity(
-                timeInMillis = calendar.timeInMillis,
+                timeInMillis = timeInMillis,
                 label = label,
                 isEnabled = true,
-                missionType = MissionType.NONE,
-                daysOfWeek = emptyList()
+                missionType = missionType,
+                difficulty = difficulty,
+                soundResId = soundResId,
+                isVibrationOn = isVibrationOn
             )
 
             repository.insertAlarm(alarm)

@@ -3,8 +3,14 @@ package com.example.kernel.data.local
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+
+enum class MissionType {
+    NONE, MATH, SHAKE
+}
+
+enum class Difficulty {
+    EASY, MEDIUM, HARD
+}
 
 @Entity(tableName = "alarms")
 data class AlarmEntity(
@@ -14,12 +20,12 @@ data class AlarmEntity(
     val label: String,
     val isEnabled: Boolean = true,
     val missionType: MissionType = MissionType.NONE,
-    val daysOfWeek: List<Int> = emptyList()
+    val difficulty: Difficulty = Difficulty.MEDIUM,
+    val soundResId: Int = 0,
+    val isVibrationOn: Boolean = true
 )
 
 class Converters {
-
-    private val gson = Gson()
 
     @TypeConverter
     fun fromMissionType(value: MissionType): String {
@@ -32,13 +38,12 @@ class Converters {
     }
 
     @TypeConverter
-    fun fromDaysOfWeek(days: List<Int>): String {
-        return gson.toJson(days)
+    fun fromDifficulty(value: Difficulty): String {
+        return value.name
     }
 
     @TypeConverter
-    fun toDaysOfWeek(value: String): List<Int> {
-        val type = object : TypeToken<List<Int>>() {}.type
-        return gson.fromJson(value, type) ?: emptyList()
+    fun toDifficulty(value: String): Difficulty {
+        return Difficulty.valueOf(value)
     }
 }

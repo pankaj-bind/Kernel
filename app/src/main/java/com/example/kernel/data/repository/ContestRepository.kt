@@ -37,22 +37,12 @@ class ContestRepository @Inject constructor(
             val allContests = mutableListOf<Contest>()
 
             // 1. Fetch Codeforces contests (filtered by user rating)
-            try {
-                val codeforcesContests = fetchCodeforcesContests()
-                allContests.addAll(codeforcesContests)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                // Continue even if Codeforces fails
-            }
+            val codeforcesContests = fetchCodeforcesContests()
+            allContests.addAll(codeforcesContests)
 
             // 2. Generate local contests (CodeChef + LeetCode)
-            try {
-                val generatedContests = contestGenerator.generateUpcomingContests()
-                allContests.addAll(generatedContests)
-            } catch (e: Exception) {
-                e.printStackTrace()
-                // Continue even if generation fails
-            }
+            val generatedContests = contestGenerator.generateUpcomingContests()
+            allContests.addAll(generatedContests)
 
             // 3. Sort by start time and filter only upcoming/live
             val sortedContests = allContests
@@ -61,7 +51,6 @@ class ContestRepository @Inject constructor(
 
             emit(Result.success(sortedContests))
         } catch (e: Exception) {
-            e.printStackTrace()
             emit(Result.failure(e))
         }
     }

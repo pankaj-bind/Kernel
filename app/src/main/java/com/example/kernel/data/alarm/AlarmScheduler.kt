@@ -23,6 +23,9 @@ class AlarmScheduler @Inject constructor(
             putExtra(EXTRA_ALARM_ID, alarm.id)
             putExtra(EXTRA_ALARM_LABEL, alarm.label)
             putExtra(EXTRA_MISSION_TYPE, alarm.missionType.name)
+            putExtra(EXTRA_DIFFICULTY, alarm.difficulty.name)
+            putExtra(EXTRA_SOUND_RES_ID, alarm.soundResId)
+            putExtra(EXTRA_IS_VIBRATION_ON, alarm.isVibrationOn)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -66,52 +69,13 @@ class AlarmScheduler @Inject constructor(
         alarmManager.cancel(pendingIntent)
     }
 
-    fun scheduleRepeating(alarm: AlarmEntity) {
-        if (alarm.daysOfWeek.isEmpty()) {
-            schedule(alarm)
-            return
-        }
-
-        val calendar = Calendar.getInstance().apply {
-            timeInMillis = alarm.timeInMillis
-        }
-
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
-        val minute = calendar.get(Calendar.MINUTE)
-
-        alarm.daysOfWeek.forEach { dayOfWeek ->
-            val nextTrigger = getNextTriggerTime(dayOfWeek, hour, minute)
-            val repeatingAlarm = alarm.copy(
-                id = alarm.id * 10 + dayOfWeek,
-                timeInMillis = nextTrigger
-            )
-            schedule(repeatingAlarm)
-        }
-    }
-
-    private fun getNextTriggerTime(dayOfWeek: Int, hour: Int, minute: Int): Long {
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, minute)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }
-
-        val currentDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-        var daysUntilTarget = dayOfWeek - currentDayOfWeek
-
-        if (daysUntilTarget < 0 || (daysUntilTarget == 0 && calendar.timeInMillis <= System.currentTimeMillis())) {
-            daysUntilTarget += 7
-        }
-
-        calendar.add(Calendar.DAY_OF_YEAR, daysUntilTarget)
-        return calendar.timeInMillis
-    }
-
     companion object {
         const val EXTRA_ALARM_ID = "extra_alarm_id"
         const val EXTRA_ALARM_LABEL = "extra_alarm_label"
         const val EXTRA_MISSION_TYPE = "extra_mission_type"
+        const val EXTRA_DIFFICULTY = "extra_difficulty"
+        const val EXTRA_SOUND_RES_ID = "extra_sound_res_id"
+        const val EXTRA_IS_VIBRATION_ON = "extra_is_vibration_on"
         private const val ONE_DAY_MILLIS = 24 * 60 * 60 * 1000L
     }
 }
