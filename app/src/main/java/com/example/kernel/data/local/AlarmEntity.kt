@@ -22,7 +22,8 @@ data class AlarmEntity(
     val missionType: MissionType = MissionType.NONE,
     val difficulty: Difficulty = Difficulty.MEDIUM,
     val soundResId: Int = 0,
-    val isVibrationOn: Boolean = true
+    val isVibrationOn: Boolean = true,
+    val shakeCount: Int = 30
 )
 
 class Converters {

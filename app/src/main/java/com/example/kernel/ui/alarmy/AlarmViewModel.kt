@@ -44,7 +44,8 @@ class AlarmViewModel @Inject constructor(
         missionType: MissionType = MissionType.NONE,
         difficulty: Difficulty = Difficulty.MEDIUM,
         soundResId: Int = 0,
-        isVibrationOn: Boolean = true
+        isVibrationOn: Boolean = true,
+        shakeCount: Int = 30
     ) {
         viewModelScope.launch {
             val alarm = AlarmEntity(
@@ -54,7 +55,8 @@ class AlarmViewModel @Inject constructor(
                 missionType = missionType,
                 difficulty = difficulty,
                 soundResId = soundResId,
-                isVibrationOn = isVibrationOn
+                isVibrationOn = isVibrationOn,
+                shakeCount = shakeCount
             )
 
             repository.insertAlarm(alarm)

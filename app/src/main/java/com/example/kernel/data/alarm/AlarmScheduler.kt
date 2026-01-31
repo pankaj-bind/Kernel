@@ -26,6 +26,7 @@ class AlarmScheduler @Inject constructor(
             putExtra(EXTRA_DIFFICULTY, alarm.difficulty.name)
             putExtra(EXTRA_SOUND_RES_ID, alarm.soundResId)
             putExtra(EXTRA_IS_VIBRATION_ON, alarm.isVibrationOn)
+            putExtra(EXTRA_SHAKE_COUNT, alarm.shakeCount)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -76,6 +77,7 @@ class AlarmScheduler @Inject constructor(
         const val EXTRA_DIFFICULTY = "extra_difficulty"
         const val EXTRA_SOUND_RES_ID = "extra_sound_res_id"
         const val EXTRA_IS_VIBRATION_ON = "extra_is_vibration_on"
+        const val EXTRA_SHAKE_COUNT = "extra_shake_count"
         private const val ONE_DAY_MILLIS = 24 * 60 * 60 * 1000L
     }
 }

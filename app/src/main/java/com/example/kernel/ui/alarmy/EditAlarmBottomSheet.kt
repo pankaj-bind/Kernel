@@ -27,6 +27,7 @@ class EditAlarmBottomSheet(private val alarm: AlarmEntity) : BottomSheetDialogFr
     private var selectedMissionType: MissionType = MissionType.NONE
     private var selectedDifficulty: Difficulty = Difficulty.MEDIUM
     private var selectedSoundResId: Int = 0
+    private var selectedShakeCount: Int = 30
     private var previewPlayer: MediaPlayer? = null
 
     private val soundOptions = mutableListOf<CreateAlarmBottomSheet.SoundOption>()
@@ -75,6 +76,7 @@ class EditAlarmBottomSheet(private val alarm: AlarmEntity) : BottomSheetDialogFr
         selectedMissionType = alarm.missionType
         selectedDifficulty = alarm.difficulty
         selectedSoundResId = alarm.soundResId
+        selectedShakeCount = alarm.shakeCount
 
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = alarm.timeInMillis
@@ -86,11 +88,21 @@ class EditAlarmBottomSheet(private val alarm: AlarmEntity) : BottomSheetDialogFr
         )
 
         binding.etLabel.setText(alarm.label)
+        binding.etShakeCount.setText(alarm.shakeCount.toString())
 
         when (alarm.missionType) {
-            MissionType.NONE -> binding.chipNone.isChecked = true
-            MissionType.MATH -> binding.chipMath.isChecked = true
-            MissionType.SHAKE -> binding.chipShake.isChecked = true
+            MissionType.NONE -> {
+                binding.chipNone.isChecked = true
+                binding.layoutShakeSettings.visibility = View.GONE
+            }
+            MissionType.MATH -> {
+                binding.chipMath.isChecked = true
+                binding.layoutShakeSettings.visibility = View.GONE
+            }
+            MissionType.SHAKE -> {
+                binding.chipShake.isChecked = true
+                binding.layoutShakeSettings.visibility = View.VISIBLE
+            }
         }
 
         when (alarm.difficulty) {
@@ -115,9 +127,18 @@ class EditAlarmBottomSheet(private val alarm: AlarmEntity) : BottomSheetDialogFr
         binding.chipGroupMission.setOnCheckedStateChangeListener { _, checkedIds ->
             if (checkedIds.isNotEmpty()) {
                 when (checkedIds[0]) {
-                    R.id.chipNone -> selectedMissionType = MissionType.NONE
-                    R.id.chipMath -> selectedMissionType = MissionType.MATH
-                    R.id.chipShake -> selectedMissionType = MissionType.SHAKE
+                    R.id.chipNone -> {
+                        selectedMissionType = MissionType.NONE
+                        binding.layoutShakeSettings.visibility = View.GONE
+                    }
+                    R.id.chipMath -> {
+                        selectedMissionType = MissionType.MATH
+                        binding.layoutShakeSettings.visibility = View.GONE
+                    }
+                    R.id.chipShake -> {
+                        selectedMissionType = MissionType.SHAKE
+                        binding.layoutShakeSettings.visibility = View.VISIBLE
+                    }
                 }
             }
         }
@@ -191,13 +212,16 @@ class EditAlarmBottomSheet(private val alarm: AlarmEntity) : BottomSheetDialogFr
     private fun setupSaveButton() {
         binding.btnSave.text = "Update Alarm"
         binding.btnSave.setOnClickListener {
+            val shakeCount = binding.etShakeCount.text.toString().toIntOrNull() ?: 30
+
             val updatedAlarm = alarm.copy(
                 timeInMillis = selectedTimeInMillis,
                 label = binding.etLabel.text.toString().ifEmpty { "Alarm" },
                 missionType = selectedMissionType,
                 difficulty = selectedDifficulty,
                 soundResId = selectedSoundResId,
-                isVibrationOn = binding.switchVibration.isChecked
+                isVibrationOn = binding.switchVibration.isChecked,
+                shakeCount = shakeCount
             )
 
             viewModel.updateAlarm(updatedAlarm)

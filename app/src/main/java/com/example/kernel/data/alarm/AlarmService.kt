@@ -29,7 +29,6 @@ class AlarmService : Service() {
     private var wakeLock: PowerManager.WakeLock? = null
     private var vibrator: Vibrator? = null
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
-    private var volumeRampJob: Job? = null
 
     companion object {
         const val EXTRA_ALARM_ID = "alarm_id"
@@ -38,6 +37,7 @@ class AlarmService : Service() {
         const val EXTRA_IS_VIBRATION_ON = "is_vibration_on"
         const val EXTRA_MISSION_TYPE = "mission_type"
         const val EXTRA_DIFFICULTY = "difficulty"
+        const val EXTRA_SHAKE_COUNT = "shake_count"
         const val ACTION_STOP_ALARM = "com.example.kernel.STOP_ALARM"
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "alarm_service_channel"
@@ -61,10 +61,11 @@ class AlarmService : Service() {
         val isVibrationOn = intent?.getBooleanExtra(EXTRA_IS_VIBRATION_ON, true) ?: true
         val missionType = intent?.getStringExtra(EXTRA_MISSION_TYPE) ?: "NONE"
         val difficulty = intent?.getStringExtra(EXTRA_DIFFICULTY) ?: "MEDIUM"
+        val shakeCount = intent?.getIntExtra(EXTRA_SHAKE_COUNT, 30) ?: 30
 
-        startForeground(NOTIFICATION_ID, createNotification(label, alarmId, missionType, difficulty))
+        startForeground(NOTIFICATION_ID, createNotification(label, alarmId, missionType, difficulty, shakeCount))
         startAlarm(soundResId, isVibrationOn)
-        launchRingActivity(alarmId, label, missionType, difficulty)
+        launchRingActivity(alarmId, label, missionType, difficulty, shakeCount)
 
         return START_STICKY
     }
@@ -75,21 +76,27 @@ class AlarmService : Service() {
 
             val finalSoundResId = if (soundResId > 0) soundResId else R.raw.alarm_clock_90867
 
+            val audioManager = getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
+            audioManager.setStreamVolume(
+                android.media.AudioManager.STREAM_ALARM,
+                audioManager.getStreamMaxVolume(android.media.AudioManager.STREAM_ALARM),
+                0
+            )
+
             mediaPlayer = MediaPlayer().apply {
                 setAudioAttributes(
                     AudioAttributes.Builder()
                         .setUsage(AudioAttributes.USAGE_ALARM)
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
                         .build()
                 )
 
                 setDataSource(applicationContext, android.net.Uri.parse("android.resource://$packageName/$finalSoundResId"))
                 isLooping = true
                 prepare()
-                setVolume(0.5f, 0.5f)
+                setVolume(1.0f, 1.0f)
                 start()
-
-                startVolumeRamp()
             }
 
             if (isVibrationOn) {
@@ -100,25 +107,16 @@ class AlarmService : Service() {
         }
     }
 
-    private fun startVolumeRamp() {
-        volumeRampJob?.cancel()
-        volumeRampJob = serviceScope.launch {
-            var currentVolume = 0.5f
-            val targetVolume = 1.0f
-            val steps = 10
-            val delayMs = 3000L
-            val increment = (targetVolume - currentVolume) / steps
-
-            repeat(steps) {
-                delay(delayMs)
-                currentVolume += increment
-                mediaPlayer?.setVolume(currentVolume, currentVolume)
-            }
-        }
-    }
 
     private fun startVibration() {
-        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vibratorManager = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as android.os.VibratorManager
+            vibratorManager.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+
         val pattern = longArrayOf(0, 1000, 1000)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -157,24 +155,26 @@ class AlarmService : Service() {
         }
     }
 
-    private fun launchRingActivity(alarmId: Long, label: String, missionType: String, difficulty: String) {
+    private fun launchRingActivity(alarmId: Long, label: String, missionType: String, difficulty: String, shakeCount: Int) {
         val intent = Intent(this, com.example.kernel.ui.alarmy.RingActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra(EXTRA_ALARM_ID, alarmId)
             putExtra(EXTRA_ALARM_LABEL, label)
             putExtra(EXTRA_MISSION_TYPE, missionType)
             putExtra(EXTRA_DIFFICULTY, difficulty)
+            putExtra(EXTRA_SHAKE_COUNT, shakeCount)
         }
         startActivity(intent)
     }
 
-    private fun createNotification(label: String, alarmId: Long, missionType: String, difficulty: String): Notification {
+    private fun createNotification(label: String, alarmId: Long, missionType: String, difficulty: String, shakeCount: Int): Notification {
         val fullScreenIntent = Intent(this, com.example.kernel.ui.alarmy.RingActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra(EXTRA_ALARM_ID, alarmId)
             putExtra(EXTRA_ALARM_LABEL, label)
             putExtra(EXTRA_MISSION_TYPE, missionType)
             putExtra(EXTRA_DIFFICULTY, difficulty)
+            putExtra(EXTRA_SHAKE_COUNT, shakeCount)
         }
         val fullScreenPendingIntent = PendingIntent.getActivity(
             this,
@@ -204,7 +204,6 @@ class AlarmService : Service() {
     }
 
     fun stopAlarmService() {
-        volumeRampJob?.cancel()
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
@@ -215,7 +214,12 @@ class AlarmService : Service() {
         wakeLock?.release()
         wakeLock = null
 
-        stopForeground(true)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+        } else {
+            @Suppress("DEPRECATION")
+            stopForeground(true)
+        }
         stopSelf()
     }
 

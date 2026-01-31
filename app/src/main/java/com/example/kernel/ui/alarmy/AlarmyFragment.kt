@@ -129,10 +129,12 @@ class AlarmyFragment : Fragment() {
             override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                val position = viewHolder.adapterPosition
-                val alarm = alarmAdapter.currentList[position]
-                viewModel.deleteAlarm(alarm)
-                Toast.makeText(requireContext(), "Alarm deleted", Toast.LENGTH_SHORT).show()
+                val position = viewHolder.bindingAdapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    val alarm = alarmAdapter.currentList[position]
+                    viewModel.deleteAlarm(alarm)
+                    Toast.makeText(requireContext(), "Alarm deleted", Toast.LENGTH_SHORT).show()
+                }
             }
         }
         ItemTouchHelper(swipeHandler).attachToRecyclerView(binding.recyclerViewAlarms)

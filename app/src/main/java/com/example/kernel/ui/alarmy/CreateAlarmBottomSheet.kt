@@ -27,6 +27,7 @@ class CreateAlarmBottomSheet : BottomSheetDialogFragment() {
     private var selectedMissionType: MissionType = MissionType.NONE
     private var selectedDifficulty: Difficulty = Difficulty.MEDIUM
     private var selectedSoundResId: Int = 0
+    private var selectedShakeCount: Int = 30
     private var previewPlayer: MediaPlayer? = null
 
     private val soundOptions = mutableListOf<SoundOption>()
@@ -95,9 +96,18 @@ class CreateAlarmBottomSheet : BottomSheetDialogFragment() {
         binding.chipGroupMission.setOnCheckedStateChangeListener { _, checkedIds ->
             if (checkedIds.isNotEmpty()) {
                 when (checkedIds[0]) {
-                    R.id.chipNone -> selectedMissionType = MissionType.NONE
-                    R.id.chipMath -> selectedMissionType = MissionType.MATH
-                    R.id.chipShake -> selectedMissionType = MissionType.SHAKE
+                    R.id.chipNone -> {
+                        selectedMissionType = MissionType.NONE
+                        binding.layoutShakeSettings.visibility = View.GONE
+                    }
+                    R.id.chipMath -> {
+                        selectedMissionType = MissionType.MATH
+                        binding.layoutShakeSettings.visibility = View.GONE
+                    }
+                    R.id.chipShake -> {
+                        selectedMissionType = MissionType.SHAKE
+                        binding.layoutShakeSettings.visibility = View.VISIBLE
+                    }
                 }
             }
         }
@@ -164,13 +174,16 @@ class CreateAlarmBottomSheet : BottomSheetDialogFragment() {
 
     private fun setupSaveButton() {
         binding.btnSave.setOnClickListener {
+            val shakeCount = binding.etShakeCount.text.toString().toIntOrNull() ?: 30
+
             viewModel.addAlarm(
                 timeInMillis = selectedTimeInMillis,
                 label = binding.etLabel.text.toString().ifEmpty { "Alarm" },
                 missionType = selectedMissionType,
                 difficulty = selectedDifficulty,
                 soundResId = selectedSoundResId,
-                isVibrationOn = binding.switchVibration.isChecked
+                isVibrationOn = binding.switchVibration.isChecked,
+                shakeCount = shakeCount
             )
 
             val calendar = java.util.Calendar.getInstance()

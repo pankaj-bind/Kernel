@@ -49,7 +49,14 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
         setContentView(binding.root)
 
         // Prevent user from leaving this activity
-        setTaskDescription(android.app.ActivityManager.TaskDescription("Alarm Ringing"))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            setTaskDescription(android.app.ActivityManager.TaskDescription.Builder()
+                .setLabel("Alarm Ringing")
+                .build())
+        } else {
+            @Suppress("DEPRECATION")
+            setTaskDescription(android.app.ActivityManager.TaskDescription("Alarm Ringing"))
+        }
 
         extractIntentData()
         setupCurrentTime()
@@ -79,6 +86,19 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
         missionType = intent.getStringExtra(AlarmService.EXTRA_MISSION_TYPE) ?: "NONE"
         difficulty = intent.getStringExtra(AlarmService.EXTRA_DIFFICULTY) ?: "MEDIUM"
 
+        val customShakeCount = intent.getIntExtra(AlarmService.EXTRA_SHAKE_COUNT, 0)
+
+        if (customShakeCount > 0 && missionType == "SHAKE") {
+            shakeTarget = customShakeCount
+        } else {
+            shakeTarget = when (difficulty) {
+                "EASY" -> 20
+                "MEDIUM" -> 30
+                "HARD" -> 50
+                else -> 30
+            }
+        }
+
         mathProblemsTotal = when (difficulty) {
             "EASY" -> 2
             "MEDIUM" -> 3
@@ -87,12 +107,6 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
         }
         mathProblemsRemaining = mathProblemsTotal
 
-        shakeTarget = when (difficulty) {
-            "EASY" -> 20
-            "MEDIUM" -> 30
-            "HARD" -> 50
-            else -> 30
-        }
 
         binding.textAlarmLabel.text = label
     }
@@ -256,9 +270,11 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         // Block back button - user must complete mission
+        // Don't call super to prevent navigation
     }
 
     override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
         // Prevent user from leaving via home button
         // Bring activity back to front
         val intent = Intent(this, RingActivity::class.java).apply {
