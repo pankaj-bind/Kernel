@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.kernel"
-        minSdk = 24
+        minSdk = 26 // Raised to 26 for java.time support
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -73,6 +73,11 @@ dependencies {
 
     // SwipeRefreshLayout
     implementation(libs.androidx.swiperefreshlayout)
+
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    ksp(libs.androidx.hilt.compiler)
 
     // Hilt
     implementation(libs.hilt.android)

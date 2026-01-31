@@ -1,6 +1,6 @@
 package com.example.kernel.di
 
-import com.example.kernel.data.remote.ContestApiService
+import com.example.kernel.data.remote.CodeforcesApiService
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dagger.Module
@@ -21,7 +21,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://kontests.net/api/"
+    private const val CODEFORCES_BASE_URL = "https://codeforces.com/api/"
 
     @Provides
     @Singleton
@@ -48,12 +48,12 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(
+    fun provideCodeforcesRetrofit(
         okHttpClient: OkHttpClient,
         gson: Gson
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(CODEFORCES_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
@@ -61,7 +61,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideContestApiService(retrofit: Retrofit): ContestApiService {
-        return retrofit.create(ContestApiService::class.java)
+    fun provideCodeforcesApiService(retrofit: Retrofit): CodeforcesApiService {
+        return retrofit.create(CodeforcesApiService::class.java)
     }
 }

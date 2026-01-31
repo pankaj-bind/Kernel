@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Dark blue background circle -->
+    <path
+        android:fillColor="#323754"
+        android:pathData="M24,24m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
+
+    <!-- White "HE" for HackerEarth -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M14,16h2v6h4v-6h2v16h-2v-8h-4v8h-2z" />
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M26,16h6v2h-4v4h4v2h-4v6h4v2h-6z" />
+</vector>

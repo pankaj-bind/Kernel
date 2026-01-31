@@ -1,0 +1,16 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Green background circle -->
+    <path
+        android:fillColor="#00EA64"
+        android:pathData="M24,24m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
+
+    <!-- White "H" for HackerRank -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,12h2v10h8v-10h2v24h-2v-12h-8v12h-2z" />
+</vector>

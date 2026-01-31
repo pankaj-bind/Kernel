@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Yellow/Gold bar (left, tallest) -->
+    <path
+        android:fillColor="#F9A825"
+        android:pathData="M8,8h8v32h-8z" />
+
+    <!-- Blue bar (middle, medium height) -->
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M20,16h8v24h-8z" />
+
+    <!-- Red bar (right, shortest) -->
+    <path
+        android:fillColor="#E53935"
+        android:pathData="M32,24h8v16h-8z" />
+</vector>

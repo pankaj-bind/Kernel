@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Black diagonal stroke (left part of A) -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M4,40L20,8h6L10,40z" />
+
+    <!-- Black diagonal stroke (right part of A) -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M22,8h6L44,40h-6z" />
+
+    <!-- Yellow/Gold accent bar -->
+    <path
+        android:fillColor="#F9A825"
+        android:pathData="M12,30h24v5h-24z" />
+</vector>

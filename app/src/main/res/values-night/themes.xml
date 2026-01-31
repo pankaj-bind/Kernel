@@ -1,7 +1,36 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Dark Mode Theme -->
     <style name="Base.Theme.Kernel" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Primary Colors (Dark Mode) -->
+        <item name="colorPrimary">#FFBB86FC</item>
+        <item name="colorPrimaryVariant">#FF6200EE</item>
+        <item name="colorOnPrimary">@color/black</item>
+
+        <!-- Secondary Colors (Dark Mode) -->
+        <item name="colorSecondary">#FF03DAC6</item>
+        <item name="colorSecondaryVariant">#FF018786</item>
+        <item name="colorOnSecondary">@color/black</item>
+
+        <!-- Surface Colors (Dark Mode) -->
+        <item name="colorSurface">#FF121212</item>
+        <item name="colorSurfaceVariant">#FF1E1E1E</item>
+        <item name="colorOnSurface">#FFFFFFFF</item>
+        <item name="colorOnSurfaceVariant">#FFB3B3B3</item>
+
+        <!-- Surface Container Tones (Dark Mode) -->
+        <item name="colorSurfaceContainerLowest">#FF0A0A0A</item>
+        <item name="colorSurfaceContainerLow">#FF1A1A1A</item>
+        <item name="colorSurfaceContainer">#FF1E1E1E</item>
+        <item name="colorSurfaceContainerHigh">#FF2A2A2A</item>
+        <item name="colorSurfaceContainerHighest">#FF353535</item>
+
+        <!-- Outline (Dark Mode) -->
+        <item name="colorOutline">#FF404040</item>
+        <item name="colorOutlineVariant">#FF2A2A2A</item>
+
+        <!-- Status Bar (Dark Mode) -->
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
     </style>
 </resources>

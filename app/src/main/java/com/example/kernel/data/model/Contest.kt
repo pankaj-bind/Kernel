@@ -1,41 +1,42 @@
 package com.example.kernel.data.model
 
-import com.google.gson.annotations.SerializedName
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.time.Duration
 
 /**
- * Data model representing a competitive programming contest.
- * This model is used to parse data from the Kontests API.
+ * Unified Contest data model supporting both API responses and locally generated contests.
  */
 data class Contest(
-    @SerializedName("name")
+    val id: String,
     val name: String,
-
-    @SerializedName("url")
     val url: String,
-
-    @SerializedName("start_time")
-    val startTime: String, // ISO 8601 format
-
-    @SerializedName("end_time")
-    val endTime: String, // ISO 8601 format
-
-    @SerializedName("duration")
-    val duration: String, // Duration in seconds
-
-    @SerializedName("site")
-    val site: String, // Platform name (e.g., "CodeForces", "CodeChef")
-
-    @SerializedName("in_24_hours")
-    val in24Hours: String, // "Yes" or "No"
-
-    @SerializedName("status")
-    val status: String // "CODING", "BEFORE"
+    val startTime: ZonedDateTime,
+    val durationSeconds: Long,
+    val platform: Platform,
+    val status: ContestStatus = ContestStatus.UPCOMING
 ) {
+
+    enum class Platform(val displayName: String, val color: Int) {
+        CODEFORCES("Codeforces", 0xFF1976D2.toInt()),
+        CODECHEF("CodeChef", 0xFF8B4513.toInt()),
+        LEETCODE("LeetCode", 0xFFFFA116.toInt()),
+        ATCODER("AtCoder", 0xFF222222.toInt()),
+        HACKERRANK("HackerRank", 0xFF00EA64.toInt()),
+        HACKEREARTH("HackerEarth", 0xFF323754.toInt()),
+        OTHER("Other", 0xFF6200EE.toInt())
+    }
+
+    enum class ContestStatus {
+        UPCOMING,
+        LIVE,
+        FINISHED
+    }
+
     /**
      * Get the duration in a human-readable format
      */
     fun getFormattedDuration(): String {
-        val durationSeconds = duration.toLongOrNull() ?: 0
         val hours = durationSeconds / 3600
         val minutes = (durationSeconds % 3600) / 60
 
@@ -48,22 +49,48 @@ data class Contest(
     }
 
     /**
-     * Get platform color as Int for XML views
+     * Get formatted start time for display
      */
-    fun getPlatformColorInt(): Int {
-        return when (site.lowercase()) {
-            "codeforces" -> 0xFF1976D2.toInt()
-            "codechef" -> 0xFF8B4513.toInt()
-            "leetcode" -> 0xFFFFA116.toInt()
-            "atcoder" -> 0xFF222222.toInt()
-            "hackerrank" -> 0xFF00EA64.toInt()
-            "hackerearth" -> 0xFF323754.toInt()
-            else -> 0xFF6200EE.toInt()
+    fun getFormattedStartTime(): String {
+        val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy • hh:mm a")
+        return startTime.format(formatter)
+    }
+
+    /**
+     * Get time until contest starts
+     */
+    fun getTimeUntilStart(): String {
+        val now = ZonedDateTime.now()
+
+        if (startTime.isBefore(now)) {
+            return if (status == ContestStatus.LIVE) "🔴 LIVE" else "Started"
+        }
+
+        val duration = Duration.between(now, startTime)
+
+        return when {
+            duration.toMinutes() < 60 -> "In ${duration.toMinutes()}m"
+            duration.toHours() < 24 -> "In ${duration.toHours()}h"
+            duration.toDays() < 7 -> "In ${duration.toDays()}d"
+            else -> "Upcoming"
         }
     }
 
     /**
-     * Check if contest is live
+     * Check if contest is currently live
      */
-    fun isLive(): Boolean = status == "CODING"
+    fun isLive(): Boolean {
+        val now = ZonedDateTime.now()
+        val endTime = startTime.plusSeconds(durationSeconds)
+        return now.isAfter(startTime) && now.isBefore(endTime)
+    }
+
+    /**
+     * Check if contest is upcoming (within next 7 days)
+     */
+    fun isUpcoming(): Boolean {
+        val now = ZonedDateTime.now()
+        val weekLater = now.plusDays(7)
+        return startTime.isAfter(now) && startTime.isBefore(weekLater)
+    }
 }
