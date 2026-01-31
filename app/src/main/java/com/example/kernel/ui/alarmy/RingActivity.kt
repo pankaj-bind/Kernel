@@ -67,18 +67,24 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
-        } else {
+
+            val keyguardManager = getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager
+            keyguardManager.requestDismissKeyguard(this, null)
+        }
+
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+            WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
+        )
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
             @Suppress("DEPRECATION")
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
             )
         }
-
-        // Keep screen on to prevent user from escaping
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     private fun extractIntentData() {
@@ -120,7 +126,16 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
         when (missionType) {
             "MATH" -> setupMathMission()
             "SHAKE" -> setupShakeMission()
-            else -> enableDismissButton()
+            else -> {
+                // No mission - show dismiss button directly
+                binding.layoutMathMission.isVisible = false
+                binding.layoutShakeMission.isVisible = false
+                binding.buttonDismiss.isVisible = true
+                binding.buttonDismiss.isEnabled = true
+                binding.buttonDismiss.setOnClickListener {
+                    dismissAlarm()
+                }
+            }
         }
     }
 
@@ -165,7 +180,7 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
 
             if (mathProblemsRemaining <= 0) {
                 Toast.makeText(this, "✓ Mission Complete!", Toast.LENGTH_SHORT).show()
-                enableDismissButton()
+                dismissAlarm()
             } else {
                 Toast.makeText(this, "✓ Correct!", Toast.LENGTH_SHORT).show()
                 generateNextMathProblem()
@@ -190,8 +205,8 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
         accelerometer?.let {
             sensorManager?.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
         } ?: run {
-            Toast.makeText(this, "Accelerometer not available", Toast.LENGTH_SHORT).show()
-            enableDismissButton()
+            Toast.makeText(this, "Accelerometer not available - alarm dismissed", Toast.LENGTH_SHORT).show()
+            dismissAlarm()
         }
     }
 
@@ -229,7 +244,7 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
                         if (shakeCount >= shakeTarget) {
                             Toast.makeText(this, "✓ Mission Complete!", Toast.LENGTH_SHORT).show()
                             sensorManager?.unregisterListener(this)
-                            enableDismissButton()
+                            dismissAlarm()
                         }
                     }
                 }
@@ -244,15 +259,6 @@ class RingActivity : AppCompatActivity(), SensorEventListener {
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 
-    private fun enableDismissButton() {
-        binding.layoutMathMission.isVisible = false
-        binding.layoutShakeMission.isVisible = false
-
-        binding.buttonDismiss.isEnabled = true
-        binding.buttonDismiss.setOnClickListener {
-            dismissAlarm()
-        }
-    }
 
     private fun dismissAlarm() {
         val stopIntent = Intent(this, AlarmService::class.java).apply {

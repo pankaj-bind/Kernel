@@ -149,7 +149,7 @@
         android:layout_marginHorizontal="32dp"
         android:layout_marginBottom="48dp"
         android:text="Dismiss Alarm"
-        android:enabled="false"
+        android:visibility="gone"
         android:textAppearance="?attr/textAppearanceTitleLarge"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

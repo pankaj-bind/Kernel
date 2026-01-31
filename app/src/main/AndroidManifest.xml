@@ -41,6 +41,8 @@
             android:turnScreenOn="true"
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
+            android:noHistory="true"
+            android:taskAffinity=""
             android:theme="@style/Theme.Kernel" />
 
         <service
