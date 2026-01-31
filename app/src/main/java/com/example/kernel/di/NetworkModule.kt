@@ -27,7 +27,7 @@ object NetworkModule {
     @Singleton
     fun provideGson(): Gson {
         return GsonBuilder()
-            .setLenient()
+            .setStrictness(com.google.gson.Strictness.LENIENT)
             .create()
     }
 
